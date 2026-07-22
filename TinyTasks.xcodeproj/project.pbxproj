@@ -1,0 +1,204 @@
+// !$*UTF8*$!
+{
+    archiveVersion = 1;
+    classes = {};
+    objectVersion = 56;
+    objects = {
+
+/* Begin PBXBuildFile section */
+        A1 /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1 /* main.swift */; };
+        A2 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2 /* AppDelegate.swift */; };
+        A3 /* TaskItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3 /* TaskItem.swift */; };
+        A4 /* TaskStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B4 /* TaskStore.swift */; };
+        A5 /* TaskWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5 /* TaskWindowController.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+        B1 /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+        B2 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+        B3 /* TaskItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskItem.swift; sourceTree = "<group>"; };
+        B4 /* TaskStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskStore.swift; sourceTree = "<group>"; };
+        B5 /* TaskWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskWindowController.swift; sourceTree = "<group>"; };
+        B6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+        C1 /* TinyTasks.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TinyTasks.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+        D1 = {
+            isa = PBXFrameworksBuildPhase;
+            buildActionMask = 2147483647;
+            files = ();
+            runOnlyForDeploymentPostprocessing = 0;
+        };
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+        E1 = {
+            isa = PBXGroup;
+            children = (
+                E2 /* TinyTasks */,
+                E3 /* Products */,
+            );
+            sourceTree = "<group>";
+        };
+        E2 /* TinyTasks */ = {
+            isa = PBXGroup;
+            children = (
+                B1 /* main.swift */,
+                B2 /* AppDelegate.swift */,
+                B3 /* TaskItem.swift */,
+                B4 /* TaskStore.swift */,
+                B5 /* TaskWindowController.swift */,
+                B6 /* Info.plist */,
+            );
+            path = TinyTasks;
+            sourceTree = "<group>";
+        };
+        E3 /* Products */ = {
+            isa = PBXGroup;
+            children = (
+                C1 /* TinyTasks.app */,
+            );
+            name = Products;
+            sourceTree = "<group>";
+        };
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+        F1 /* TinyTasks */ = {
+            isa = PBXNativeTarget;
+            buildConfigurationList = G1;
+            buildPhases = (
+                H1,
+                D1,
+                H2,
+            );
+            buildRules = ();
+            dependencies = ();
+            name = TinyTasks;
+            productName = TinyTasks;
+            productReference = C1 /* TinyTasks.app */;
+            productType = "com.apple.product-type.application";
+        };
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+        I1 /* Project object */ = {
+            isa = PBXProject;
+            attributes = {
+                BuildIndependentTargetsInParallel = 1;
+                LastSwiftUpdateCheck = 1600;
+                LastUpgradeCheck = 1600;
+            };
+            buildConfigurationList = G2;
+            compatibilityVersion = "Xcode 14.0";
+            developmentRegion = en;
+            hasScannedForEncodings = 0;
+            knownRegions = (en, Base);
+            mainGroup = E1;
+            productRefGroup = E3;
+            projectDirPath = "";
+            projectRoot = "";
+            targets = (F1);
+        };
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+        H2 = {
+            isa = PBXResourcesBuildPhase;
+            buildActionMask = 2147483647;
+            files = ();
+            runOnlyForDeploymentPostprocessing = 0;
+        };
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+        H1 = {
+            isa = PBXSourcesBuildPhase;
+            buildActionMask = 2147483647;
+            files = (
+                A1,
+                A2,
+                A3,
+                A4,
+                A5,
+            );
+            runOnlyForDeploymentPostprocessing = 0;
+        };
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+        J1 /* Debug */ = {
+            isa = XCBuildConfiguration;
+            buildSettings = {
+                CODE_SIGN_STYLE = Automatic;
+                COMBINE_HIDPI_IMAGES = YES;
+                CURRENT_PROJECT_VERSION = 1;
+                DEVELOPMENT_TEAM = "";
+                GENERATE_INFOPLIST_FILE = NO;
+                INFOPLIST_FILE = TinyTasks/Info.plist;
+                LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+                MACOSX_DEPLOYMENT_TARGET = 13.0;
+                MARKETING_VERSION = 1.0;
+                PRODUCT_BUNDLE_IDENTIFIER = com.local.TinyTasks;
+                PRODUCT_NAME = "$(TARGET_NAME)";
+                SDKROOT = macosx;
+                SWIFT_VERSION = 5.0;
+            };
+            name = Debug;
+        };
+        J2 /* Release */ = {
+            isa = XCBuildConfiguration;
+            buildSettings = {
+                CODE_SIGN_STYLE = Automatic;
+                COMBINE_HIDPI_IMAGES = YES;
+                CURRENT_PROJECT_VERSION = 1;
+                DEVELOPMENT_TEAM = "";
+                GENERATE_INFOPLIST_FILE = NO;
+                INFOPLIST_FILE = TinyTasks/Info.plist;
+                LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+                MACOSX_DEPLOYMENT_TARGET = 13.0;
+                MARKETING_VERSION = 1.0;
+                PRODUCT_BUNDLE_IDENTIFIER = com.local.TinyTasks;
+                PRODUCT_NAME = "$(TARGET_NAME)";
+                SDKROOT = macosx;
+                SWIFT_OPTIMIZATION_LEVEL = "-O";
+                SWIFT_VERSION = 5.0;
+            };
+            name = Release;
+        };
+        J3 /* Debug */ = {
+            isa = XCBuildConfiguration;
+            buildSettings = {
+                MACOSX_DEPLOYMENT_TARGET = 13.0;
+                SDKROOT = macosx;
+            };
+            name = Debug;
+        };
+        J4 /* Release */ = {
+            isa = XCBuildConfiguration;
+            buildSettings = {
+                MACOSX_DEPLOYMENT_TARGET = 13.0;
+                SDKROOT = macosx;
+            };
+            name = Release;
+        };
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+        G1 = {
+            isa = XCConfigurationList;
+            buildConfigurations = (J1, J2);
+            defaultConfigurationIsVisible = 0;
+            defaultConfigurationName = Release;
+        };
+        G2 = {
+            isa = XCConfigurationList;
+            buildConfigurations = (J3, J4);
+            defaultConfigurationIsVisible = 0;
+            defaultConfigurationName = Release;
+        };
+/* End XCConfigurationList section */
+    };
+    rootObject = I1;
+}
