@@ -78,6 +78,14 @@ final class TaskStore {
         guard task.title != title else { return }
         registerSnapshotUndo(actionName: "Rename Task")
         task.title = title
+        task.richTextData = nil
+        save()
+    }
+
+    func updateText(_ task: TaskItem, title: String, richTextData: Data?) {
+        guard task.title != title || task.richTextData != richTextData else { return }
+        task.title = title
+        task.richTextData = richTextData
         save()
     }
 

@@ -73,9 +73,133 @@ final class AppearancePreferences {
 
 
 
+private enum TaskTextAppearance {
+    static let font = NSFont.systemFont(ofSize: NSFont.systemFontSize)
+
+    static func apply(
+        to text: NSMutableAttributedString,
+        range: NSRange,
+        textColor: NSColor
+    ) {
+        guard range.length > 0 else { return }
+
+        text.beginEditing()
+        text.removeAttribute(.font, range: range)
+        text.removeAttribute(.foregroundColor, range: range)
+        text.removeAttribute(.backgroundColor, range: range)
+        text.addAttributes([
+            .font: font,
+            .foregroundColor: textColor
+        ], range: range)
+
+        text.enumerateAttribute(.link, in: range) { value, linkRange, _ in
+            guard value != nil else { return }
+            text.addAttributes([
+                .foregroundColor: NSColor.linkColor,
+                .underlineStyle: NSUnderlineStyle.single.rawValue
+            ], range: linkRange)
+        }
+        text.endEditing()
+    }
+
+    static func styled(
+        _ source: NSAttributedString,
+        textColor: NSColor,
+        isCompleted: Bool
+    ) -> NSAttributedString {
+        let result = NSMutableAttributedString(attributedString: source)
+        let range = NSRange(location: 0, length: result.length)
+        apply(to: result, range: range, textColor: textColor)
+
+        if isCompleted, range.length > 0 {
+            result.addAttribute(
+                .strikethroughStyle,
+                value: NSUnderlineStyle.single.rawValue,
+                range: range
+            )
+        }
+
+        return result
+    }
+}
+
+private enum TaskTextArchive {
+    static func data(from text: NSAttributedString) -> Data? {
+        let range = NSRange(location: 0, length: text.length)
+        guard range.length > 0 else { return nil }
+
+        return try? text.data(
+            from: range,
+            documentAttributes: [.documentType: NSAttributedString.DocumentType.rtf]
+        )
+    }
+
+    static func attributedString(from data: Data) -> NSAttributedString? {
+        try? NSAttributedString(
+            data: data,
+            options: [.documentType: NSAttributedString.DocumentType.rtf],
+            documentAttributes: nil
+        )
+    }
+}
+
+private final class TaskTextFieldEditor: NSTextView {
+    override func readSelection(
+        from pasteboard: NSPasteboard,
+        type: NSPasteboard.PasteboardType
+    ) -> Bool {
+        let replacementRange = selectedRange()
+        let previousLength = textStorage?.length ?? 0
+
+        guard super.readSelection(from: pasteboard, type: type),
+              let textStorage else {
+            return false
+        }
+
+        let insertedLength = textStorage.length - (previousLength - replacementRange.length)
+        let insertedRange = NSRange(
+            location: replacementRange.location,
+            length: max(0, insertedLength)
+        )
+
+        if insertedRange.length > 0,
+           NSMaxRange(insertedRange) <= textStorage.length {
+            TaskTextAppearance.apply(
+                to: textStorage,
+                range: insertedRange,
+                textColor: AppearancePreferences.shared.textColor
+            )
+        }
+
+        var attributes = typingAttributes
+        attributes[.font] = TaskTextAppearance.font
+        attributes[.foregroundColor] = AppearancePreferences.shared.textColor
+        attributes.removeValue(forKey: .backgroundColor)
+        typingAttributes = attributes
+        didChangeText()
+
+        return true
+    }
+}
+
 final class TinyTasksWindow: NSWindow {
+    private lazy var taskFieldEditor: TaskTextFieldEditor = {
+        let editor = TaskTextFieldEditor(frame: .zero)
+        editor.isFieldEditor = true
+        editor.isRichText = true
+        return editor
+    }()
+
     override var canBecomeKey: Bool { true }
     override var canBecomeMain: Bool { true }
+
+    override func fieldEditor(_ createFlag: Bool, for object: Any?) -> NSText? {
+        if object is TaskTextField {
+            return taskFieldEditor
+        }
+
+        return super.fieldEditor(createFlag, for: object)
+    }
 }
 
 final class TaskButton: NSButton {
@@ -824,12 +948,10 @@ final class TaskWindowController: NSWindowController,
                 - CGFloat(level) * outlineView.indentationPerLevel
         )
 
-        let font = NSFont.systemFont(ofSize: NSFont.systemFontSize)
-        let attributes: [NSAttributedString.Key: Any] = [.font: font]
-        let size = (task.title as NSString).boundingRect(
+        let size = styledTitle(for: task).boundingRect(
             with: NSSize(width: availableWidth, height: .greatestFiniteMagnitude),
             options: [.usesLineFragmentOrigin, .usesFontLeading],
-            attributes: attributes
+            context: nil
         ).size
 
         return max(34, ceil(size.height) + 14)
@@ -972,14 +1094,11 @@ final class TaskWindowController: NSWindowController,
             : selectedTextColor
 
         let result = NSMutableAttributedString(
-            string: task.title,
-            attributes: [
-                .font: NSFont.systemFont(ofSize: NSFont.systemFontSize),
-                .foregroundColor: baseColor,
-                .strikethroughStyle: task.isCompleted
-                    ? NSUnderlineStyle.single.rawValue
-                    : 0
-            ]
+            attributedString: TaskTextAppearance.styled(
+                storedTitle(for: task),
+                textColor: baseColor,
+                isCompleted: task.isCompleted
+            )
         )
 
         if let detector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue) {
@@ -995,6 +1114,24 @@ final class TaskWindowController: NSWindowController,
         }
 
         return result
+    }
+
+    private func editableTitle(for task: TaskItem) -> NSAttributedString {
+        TaskTextAppearance.styled(
+            storedTitle(for: task),
+            textColor: AppearancePreferences.shared.textColor,
+            isCompleted: false
+        )
+    }
+
+    private func storedTitle(for task: TaskItem) -> NSAttributedString {
+        if let data = task.richTextData,
+           let attributedTitle = TaskTextArchive.attributedString(from: data),
+           attributedTitle.string == task.title {
+            return attributedTitle
+        }
+
+        return NSAttributedString(string: task.title)
     }
 
     @objc private func toggleCompleted(_ sender: TaskButton) {
@@ -1223,8 +1360,19 @@ final class TaskWindowController: NSWindowController,
     private func updateTaskText(_ field: TaskTextField, from editor: NSTextView) {
         guard let task = field.taskItem else { return }
 
-        task.title = editor.string
-        store.save()
+        let attributedTitle = editor.textStorage.map {
+            TaskTextAppearance.styled(
+                NSAttributedString(attributedString: $0),
+                textColor: AppearancePreferences.shared.textColor,
+                isCompleted: false
+            )
+        } ?? NSAttributedString(string: editor.string)
+
+        store.updateText(
+            task,
+            title: attributedTitle.string,
+            richTextData: TaskTextArchive.data(from: attributedTitle)
+        )
         outlineView.noteHeightOfRows(
             withIndexesChanged: IndexSet(integersIn: 0..<max(0, outlineView.numberOfRows))
         )
@@ -1258,9 +1406,32 @@ final class TaskWindowController: NSWindowController,
             return
         }
 
-        guard let field = notification.object as? TaskTextField else { return }
-        field.stringValue = field.taskItem?.title ?? field.stringValue
+        guard let field = notification.object as? TaskTextField,
+              let task = field.taskItem else { return }
+
         field.textColor = AppearancePreferences.shared.textColor
+
+        if let editor = field.currentEditor() as? NSTextView,
+           let textStorage = editor.textStorage {
+            let selectedRange = editor.selectedRange()
+            textStorage.setAttributedString(editableTitle(for: task))
+            let selectionLocation = min(selectedRange.location, textStorage.length)
+            editor.setSelectedRange(
+                NSRange(
+                    location: selectionLocation,
+                    length: min(
+                        selectedRange.length,
+                        textStorage.length - selectionLocation
+                    )
+                )
+            )
+
+            var attributes = editor.typingAttributes
+            attributes[.font] = TaskTextAppearance.font
+            attributes[.foregroundColor] = AppearancePreferences.shared.textColor
+            attributes.removeValue(forKey: .backgroundColor)
+            editor.typingAttributes = attributes
+        }
     }
 
     func controlTextDidEndEditing(_ notification: Notification) {
@@ -1277,7 +1448,11 @@ final class TaskWindowController: NSWindowController,
             return
         }
 
-        store.rename(task, to: field.stringValue)
+        if let editor = field.currentEditor() as? NSTextView {
+            updateTaskText(field, from: editor)
+        } else {
+            store.rename(task, to: field.stringValue)
+        }
         outlineView.reloadItem(task)
         outlineView.noteHeightOfRows(
             withIndexesChanged: IndexSet(integersIn: 0..<max(0, outlineView.numberOfRows))
